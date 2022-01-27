@@ -5,14 +5,30 @@ import (
 	"github.com/E-Kelly2018/bookings/pkg/config"
 	"github.com/E-Kelly2018/bookings/pkg/handlers"
 	"github.com/E-Kelly2018/bookings/pkg/render"
+	"github.com/alexedwards/scs/v2"
 	"log"
 	"net/http"
+	"time"
 )
+
+var app config.AppConfig
+var session *scs.SessionManager
 
 const port = ":8080"
 
 func main() {
-	var app config.AppConfig
+	//Chnage to true when in production
+	app.InProduction = false
+
+	//Set up session timeout
+	session = scs.New()
+	session.Lifetime = 24 * time.Hour
+	session.Cookie.Persist = true
+	session.Cookie.SameSite = http.SameSiteLaxMode
+	session.Cookie.Secure = app.InProduction
+
+	app.Session = session
+
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
 		log.Fatal("Cannot create template cache")
